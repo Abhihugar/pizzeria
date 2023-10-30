@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  db:
+    restart: unless-stopped
+    image: mysql:8.0 # Use a specific version, e.g., MySQL 8.0
+    container_name: local_db
+    volumes:
+      - ./default_database_data/db:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=pizzeria
+      - MYSQL_USER=abhishek
+      - MYSQL_PASSWORD=ascend
+      - MYSQL_ROOT_PASSWORD=root_password
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: "redis:latest"
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  web:
+    container_name: web_server
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    depends_on:
+      - db
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  celery:
+    container_name: celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+    command: celery -A pizza worker --loglevel=info
+
+  celery-beat:
+    container_name: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+      - celery
+    command: celery -A pizza beat -l info
