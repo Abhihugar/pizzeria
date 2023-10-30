@@ -72,3 +72,10 @@
 
 
 # docker will handle the restart if django is not able to connect to db
+
+# Env file
+    DEFAULT_DATABASE_HOSTNAME=localhost
+    DEFAULT_DATABASE_USER=abhishek
+    DEFAULT_DATABASE_PASSWORD=ascend
+    DEFAULT_DATABASE_PORT=3306
+    DEFAULT_DATABASE_DB=pizzeria
